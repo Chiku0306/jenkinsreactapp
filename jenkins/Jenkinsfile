@@ -1,35 +1,25 @@
 pipeline {
-    agent none
-    
-    stages {
-        stage('Setup DinD') {
-            agent {
-                docker {
-                    image 'docker:dind'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                sh 'docker pull node:lts-buster-slim'
-            }
+    agent {
+        docker {
+            image 'node:lts-buster-slim'
+            args '-p 3000:3000'
         }
-        stage('Build and Test') {
-            agent {
-                docker {
-                    image 'node:lts-buster-slim'
-                    args '-p 3000:3000'
-                }
-            }
-            environment {
-                CI = 'true'
-            }
+    }
+    environment {
+        CI = 'true'
+    }
+    stages {
+        stage('Build') {
             steps {
                 sh 'npm install'
+            }
+        }
+        stage('Test') {
+            steps {
                 sh './jenkins/scripts/test.sh'
             }
         }
         stage('Deliver') {
-            agent any
             steps {
                 sh './jenkins/scripts/deliver.sh'
                 input message: 'Finished using the web site? (Click "Proceed" to continue)'
