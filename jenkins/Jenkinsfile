@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'node:14' // Use the desired Node.js version
+            image 'docker:dind'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
@@ -19,14 +19,10 @@ pipeline {
                 sh 'npm install'
             }
         }
-        stage('Build Docker Image') {
+        stage('Build and Test') {
             steps {
-                sh 'docker build -t my-node-app .' // Replace with your Docker build command
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                sh 'npm test' // Replace with your test command
+                sh 'docker build -t my-node-app .' // Build Docker image
+                sh 'npm test' // Run tests
             }
         }
     }
